@@ -3,6 +3,7 @@
 #include <windows.h>
 #include "resource.h"
 
+
 //Global variables
 
 #define ID_EDITCHILD 100
@@ -24,21 +25,48 @@ void LoadFile(LPCWSTR file)
 	DWORD dwSize;
 	DWORD dw;
 
-	LPBYTE lpBuffer = NULL;
+	//LPBYTE lpBuffer = NULL;
 
 	hFile = CreateFile(file,GENERIC_READ,0,NULL,OPEN_EXISTING,0,NULL);
 	dwSize = GetFileSize(hFile, NULL);
-	lpBuffer = (LPBYTE) HeapAlloc(GetProcessHeap(), HEAP_GENERATE_EXCEPTIONS, dwSize+1);
-	ReadFile(hFile,(LPWSTR)lpBuffer,dwSize,&dw,NULL);
+	//lpBuffer = (LPBYTE) HeapAlloc(GetProcessHeap(), HEAP_GENERATE_EXCEPTIONS, dwSize+1);
+	LPWSTR pszText;
+	pszText = (LPWSTR) GlobalAlloc(GPTR, dwSize/2);
+	ReadFile(hFile,pszText,dwSize,&dw,NULL);
 	CloseHandle(hFile);
-	lpBuffer[dwSize]=0;
-	SetWindowText(hwndEdit, (LPCWSTR) lpBuffer);
-	HeapFree(GetProcessHeap(), 0, lpBuffer);
+	pszText[dwSize/2]='\0';
+	//lpBuffer[dwSize]=0;
+
+	//MessageBox(hwnd,pszText,L"1",MB_OK);
+	SetWindowText(hwndEdit, pszText);
+	GlobalFree(pszText);
+	//HeapFree(GetProcessHeap(), 0, lpBuffer);
+	CloseHandle(hFile);
 }
 
 void SaveFile(LPCWSTR pszFileName)
 {
-    HANDLE hFile;
+	HANDLE hFile;
+	currentFile=pszFileName;
+	SetWindowText(hwnd, pszFileName);
+
+	hFile = CreateFile(pszFileName, GENERIC_WRITE, 0, NULL,
+		CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	DWORD dwTextLength = GetWindowTextLength(hwndEdit);
+	LPWSTR pszText;
+	DWORD dwBufferSize = dwTextLength + 1;
+	pszText = (LPWSTR) GlobalAlloc(GPTR, dwBufferSize);
+	GetWindowText(hwndEdit, pszText, dwBufferSize);
+	MessageBox(hwnd, pszText, L"1", MB_OK);
+	DWORD dwWritten;
+	//MessageBox(hwnd,pszText, L"FU?N", MB_OK);
+	//SetEndOfFile(hFile);
+
+	WriteFile(hFile, pszText, sizeof(WCHAR)*wcslen(pszText), &dwWritten, NULL);
+	//return;
+	GlobalFree(pszText);
+	CloseHandle(hFile);
+    /*HANDLE hFile;
 	currentFile=pszFileName;
 	SetWindowText(hwnd, pszFileName);
 
@@ -59,15 +87,16 @@ void SaveFile(LPCWSTR pszFileName)
                 {
                     DWORD dwWritten;
 					//MessageBox(hwnd,pszText, L"FU?N", MB_OK);
-					SetEndOfFile(hFile);
-                    WriteFile(hFile, pszText, 2*dwTextLength, &dwWritten, NULL);
+					//SetEndOfFile(hFile);
+					
+					//WriteFile(hFile, pszText, dwTextLength, &dwWritten, NULL);
                     //return;
                 }
                 GlobalFree(pszText);
             }
         }
         CloseHandle(hFile);
-    }
+    }*/
 }
 
 void OpenDialog(HWND hwnd)
