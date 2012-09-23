@@ -1,4 +1,4 @@
 MonkeyPad
 =========
 
-Winapi Notepad Project FUN
+Winapi Notepad Project
