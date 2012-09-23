@@ -57,7 +57,7 @@ void SaveFile(LPCWSTR pszFileName)
 	DWORD dwBufferSize = dwTextLength + 1;
 	pszText = (LPWSTR) GlobalAlloc(GPTR, dwBufferSize);
 	GetWindowText(hwndEdit, pszText, dwBufferSize);
-	MessageBox(hwnd, pszText, L"1", MB_OK);
+	//MessageBox(hwnd, pszText, L"1", MB_OK);
 	DWORD dwWritten;
 	//MessageBox(hwnd,pszText, L"FU?N", MB_OK);
 	//SetEndOfFile(hFile);
