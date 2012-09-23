@@ -15,12 +15,15 @@ WNDCLASSEX wc;
 HWND hwnd;
 MSG Msg;
 HWND hwndEdit;
-LPCWSTR currentFile=L"";
+LPWSTR currentFile=L"";
 //Functions
 void LoadFile(LPCWSTR file)
 {
-	currentFile=file;
-	SetWindowText(hwnd, file);
+	//if(currentFile!=NULL) GlobalFree(currentFile);
+	currentFile=(LPWSTR)GlobalAlloc(GPTR, lstrlen(file));
+	lstrcpy(currentFile,file);
+	//MessageBox(hwnd,currentFile,file,MB_OK);
+	SetWindowText(hwnd, currentFile);//currentFile);
 	HANDLE hFile;
 	DWORD dwSize;
 	DWORD dw;
@@ -44,13 +47,14 @@ void LoadFile(LPCWSTR file)
 	CloseHandle(hFile);
 }
 
-void SaveFile(LPCWSTR pszFileName)
+void SaveFile(LPCWSTR file)
 {
+	//if(currentFile!=NULL) GlobalFree(currentFile);
+	currentFile=(LPWSTR)GlobalAlloc(GPTR, lstrlen(file));
+	lstrcpy(currentFile,file);
 	HANDLE hFile;
-	currentFile=pszFileName;
-	SetWindowText(hwnd, pszFileName);
-
-	hFile = CreateFile(pszFileName, GENERIC_WRITE, 0, NULL,
+	SetWindowText(hwnd, currentFile);
+	hFile = CreateFile(file, GENERIC_WRITE, 0, NULL,
 		CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	DWORD dwTextLength = GetWindowTextLength(hwndEdit);
 	LPWSTR pszText;
@@ -59,44 +63,11 @@ void SaveFile(LPCWSTR pszFileName)
 	GetWindowText(hwndEdit, pszText, dwBufferSize);
 	//MessageBox(hwnd, pszText, L"1", MB_OK);
 	DWORD dwWritten;
-	//MessageBox(hwnd,pszText, L"FU?N", MB_OK);
-	//SetEndOfFile(hFile);
 
 	WriteFile(hFile, pszText, sizeof(WCHAR)*wcslen(pszText), &dwWritten, NULL);
 	//return;
 	GlobalFree(pszText);
 	CloseHandle(hFile);
-    /*HANDLE hFile;
-	currentFile=pszFileName;
-	SetWindowText(hwnd, pszFileName);
-
-    hFile = CreateFile(pszFileName, GENERIC_WRITE, 0, NULL,
-        CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-    if(hFile != INVALID_HANDLE_VALUE)
-    {
-        DWORD dwTextLength = GetWindowTextLength(hwndEdit);
-
-        if(dwTextLength > 0)
-        {
-            LPWSTR pszText;
-            DWORD dwBufferSize = dwTextLength + 1;
-            pszText = (LPWSTR) GlobalAlloc(GPTR, dwBufferSize);
-            if(pszText != NULL)
-            {
-                if(GetWindowText(hwndEdit, pszText, dwBufferSize))
-                {
-                    DWORD dwWritten;
-					//MessageBox(hwnd,pszText, L"FU?N", MB_OK);
-					//SetEndOfFile(hFile);
-					
-					//WriteFile(hFile, pszText, dwTextLength, &dwWritten, NULL);
-                    //return;
-                }
-                GlobalFree(pszText);
-            }
-        }
-        CloseHandle(hFile);
-    }*/
 }
 
 void OpenDialog(HWND hwnd)
@@ -124,9 +95,8 @@ void OpenDialog(HWND hwnd)
 
 void SaveDialog(HWND hwnd)
 {
-	OPENFILENAME ofn;
 	TCHAR szFile[MAX_PATH];
-
+	OPENFILENAME ofn;
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.lpstrFile = szFile;
@@ -210,7 +180,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				OpenDialog(hwnd);
 				return 0;
 			case ID_FILE_SAVE40003:
-				if(currentFile!=L"") SaveFile(currentFile);
+				if(lstrcmp(currentFile,L"")) SaveFile(currentFile);
 				else SaveDialog(hwnd);
 				return 0;
 			case ID_FILE_SAVEAS:
